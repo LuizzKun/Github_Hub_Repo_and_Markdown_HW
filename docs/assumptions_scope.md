@@ -1,63 +1,46 @@
-# Assumptions and Scope
-SteelWorks Operations Internal Tool
+# Assumptions and Scope — Operations Role
+SteelWorks Internal Operations Reporting Tool
 
 ---
 
 ## Assumptions
 
-1. The system is an internal tool used only by SteelWorks employees (operations, quality, and production teams).
+### Assumption 1
+We assume all production, inspection, and shipment Excel files contain a common lot identifier (e.g., Lot_ID or Lot Code) that allows relational mapping across departments.
 
-2. Each production batch is identified by a unique lot code.
+### Assumption 2
+We assume production line identifiers are consistent enough to map to a standardized production_lines table.
 
-3. A lot may be produced on one production line per production record, but a production line can produce many lots.
+### Assumption 3
+We assume defect types are categorized consistently in inspection logs and can be mapped to predefined defect types.
 
-4. Quality inspections are recorded by lot and defect type.
+### Assumption 4
+We assume shipment data contains a clear indicator of whether a lot has shipped and, if shipped, includes a shipment date.
 
-5. Defects are categorized into predefined defect types.
-
-6. A lot may be inspected multiple times.
-
-7. A lot may or may not be shipped. If shipped, it will have one shipment record.
-
-8. Operations primarily need summary-level information (e.g., defects by line, defect trends over time, shipment status).
-
-9. Data is originally sourced from spreadsheets maintained by production, quality, and shipping teams.
-
-10. The system focuses on structured reporting and does not include advanced analytics or predictive modeling.
+### Assumption 5
+We assume the Excel files represent historical operational data and are imported periodically rather than streamed in real time.
 
 ---
 
-## Scope
+## In Scope
 
-### In Scope
-
-- Storing production records by lot and production line.
-- Storing inspection records by lot and defect type.
-- Tracking shipment status of each lot.
-- Supporting queries for:
-  - Production line issue summaries
-  - Defect trends over time
-  - Shipment status lookup by lot
-  - Combined reporting across production, inspection, and shipment data
-- Enforcing data integrity through constraints and foreign keys.
-
-### Out of Scope
-
-- User authentication and role management.
-- Real-time IoT integration from production machines.
-- Advanced analytics or machine learning models.
-- Financial tracking or cost analysis.
-- Inventory management beyond lot-level tracking.
-- Detailed employee or inspector management.
-- External customer-facing functionality.
+- Identifying which production lines had the most defects within a given time period
+- Aggregating defect counts by lot, production line, and date
+- Identifying defect trends over time
+- Determining whether a lot has been shipped
+- Comparing production, inspection, and shipment records for the same lot
+- Enforcing referential integrity between lots, production lines, defects, and shipments
 
 ---
 
-## Constraints
+## Out of Scope
 
-- PostgreSQL is used as the database.
-- All tables use surrogate primary keys.
-- Data types follow best practices (DATE, INTEGER, BOOLEAN).
-- Naming conventions follow snake_case and plural table names.
-- Referential integrity is enforced with foreign keys.
+- Root cause analysis of production defects
+- Predictive or AI-based defect forecasting
+- Real-time production monitoring
+- Inventory forecasting or materials planning
+- Financial cost analysis
+- Workforce or shift management
+- Authentication, authorization, and role-based access control
+- Enforcement of Excel data correctness at the source
 
