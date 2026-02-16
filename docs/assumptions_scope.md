@@ -1,48 +1,63 @@
-# Campus Event Hub — Assumptions & Scope
-
-## Project Overview
-Campus Event Hub is an internal university web application that centralizes
-event submission, review, and discovery for students and staff.
+# Assumptions and Scope
+SteelWorks Operations Internal Tool
 
 ---
 
 ## Assumptions
-- This is an **internal university system**, not a public commercial product.
-- Expected users:
-  - Hundreds of students browsing and searching events
-  - Dozens of student organization leaders submitting events
-  - A small number of staff administrators reviewing events
-- Concurrent usage is **low to moderate**.
-- No strict real-time or high-availability requirements.
-- The system is built and maintained by a **small team (2–4 engineers)**.
-- Cloud hosting is available, but **budget and operational resources are limited**.
-- Most system functionality is **CRUD-based**.
+
+1. The system is an internal tool used only by SteelWorks employees (operations, quality, and production teams).
+
+2. Each production batch is identified by a unique lot code.
+
+3. A lot may be produced on one production line per production record, but a production line can produce many lots.
+
+4. Quality inspections are recorded by lot and defect type.
+
+5. Defects are categorized into predefined defect types.
+
+6. A lot may be inspected multiple times.
+
+7. A lot may or may not be shipped. If shipped, it will have one shipment record.
+
+8. Operations primarily need summary-level information (e.g., defects by line, defect trends over time, shipment status).
+
+9. Data is originally sourced from spreadsheets maintained by production, quality, and shipping teams.
+
+10. The system focuses on structured reporting and does not include advanced analytics or predictive modeling.
 
 ---
 
-## In Scope
-- Event submission:
-  - Title, date, time, location, and description
-  - Input validation and error messages
-  - Events saved with status **submitted**
-  - Confirmation message on successful submission
-- Event discovery:
-  - Browse and search approved upcoming events
-  - Filter by date or category
-  - View event details
-- Event review:
-  - Admins can approve or reject submitted events
-  - Approved events are visible to students
-  - Rejected events are not visible
-- Maintainability:
-  - New features can be added with minimal refactoring
-  - Changes to one feature should not impact unrelated features
+## Scope
+
+### In Scope
+
+- Storing production records by lot and production line.
+- Storing inspection records by lot and defect type.
+- Tracking shipment status of each lot.
+- Supporting queries for:
+  - Production line issue summaries
+  - Defect trends over time
+  - Shipment status lookup by lot
+  - Combined reporting across production, inspection, and shipment data
+- Enforcing data integrity through constraints and foreign keys.
+
+### Out of Scope
+
+- User authentication and role management.
+- Real-time IoT integration from production machines.
+- Advanced analytics or machine learning models.
+- Financial tracking or cost analysis.
+- Inventory management beyond lot-level tracking.
+- Detailed employee or inspector management.
+- External customer-facing functionality.
 
 ---
 
-## Out of Scope
-- Native mobile applications
-- Public APIs for external partners
-- Real-time chat or streaming
-- Advanced role-based permissions
-- Analytics or recommendation engines
+## Constraints
+
+- PostgreSQL is used as the database.
+- All tables use surrogate primary keys.
+- Data types follow best practices (DATE, INTEGER, BOOLEAN).
+- Naming conventions follow snake_case and plural table names.
+- Referential integrity is enforced with foreign keys.
+
