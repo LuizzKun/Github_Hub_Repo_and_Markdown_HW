@@ -23,7 +23,9 @@ Date: 2024-02-16
 import streamlit as st
 from datetime import date, timedelta
 from src.service import OperationsReportingService
+from dotenv import load_dotenv
 import os
+from pathlib import Path
 
 # ===== Page Configuration =====
 
@@ -51,6 +53,8 @@ def get_service():
     Time Complexity: O(1) cache hit, O(1) initial DB connection
     Space Complexity: O(1) singleton service
     """
+    env_path = Path(__file__).resolve().parents[1] / '.env'
+    load_dotenv(dotenv_path=env_path)
     os.environ.setdefault('DB_HOST', 'localhost')
     os.environ.setdefault('DB_PORT', '5432')
     os.environ.setdefault('DB_NAME', 'steelworks_ops')

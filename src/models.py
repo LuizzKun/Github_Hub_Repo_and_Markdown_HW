@@ -17,11 +17,13 @@ Author: SteelWorks Operations Team
 Date: 2024-02-16
 """
 
-from sqlalchemy import create_engine, Column, Integer, String, Date, Boolean, ForeignKey, BigInteger, Check
+from sqlalchemy import create_engine, Column, Integer, String, Date, Boolean, ForeignKey, BigInteger
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import sessionmaker, relationship
+from dotenv import load_dotenv
 from typing import Optional
 import os
+from pathlib import Path
 
 # Base class for all ORM models
 Base = declarative_base()
@@ -276,6 +278,12 @@ def get_db_connection_string() -> str:
     Raises:
         KeyError: If required environment variables are missing
     """
+    env_path = Path(__file__).resolve().parents[1] / '.env'
+    load_dotenv(dotenv_path=env_path)
+    database_url = os.getenv('DATABASE_URL')
+    if database_url:
+        return database_url
+
     host = os.getenv('DB_HOST', 'localhost')
     port = os.getenv('DB_PORT', '5432')
     name = os.getenv('DB_NAME', 'steelworks_ops')

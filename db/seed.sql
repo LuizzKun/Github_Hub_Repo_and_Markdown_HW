@@ -33,8 +33,7 @@ INSERT INTO lots (lot_code) VALUES
 ('LOT-2024-02-002'),
 ('LOT-2024-02-003'),
 ('LOT-2024-02-004'),
-('LOT-2024-02-005')
-ON CONFLICT (lot_code) DO NOTHING;
+('LOT-2024-02-005');
 
 -- ======================================================
 -- SEED: Production Lines (from operations logs)
@@ -44,8 +43,7 @@ INSERT INTO production_lines (line_code) VALUES
 ('LINE-B'),
 ('LINE-C'),
 ('LINE-D'),
-('LINE-E')
-ON CONFLICT (line_code) DO NOTHING;
+('LINE-E');
 
 -- ======================================================
 -- SEED: Defect Types (from QE_Inspector daily/weekly logs)
@@ -58,8 +56,7 @@ INSERT INTO defect_types (defect_code) VALUES
 ('SEAL-FAILURE'),
 ('CORROSION-SPOT'),
 ('PAINT-CHIP'),
-('ASSEMBLY-MISALIGN')
-ON CONFLICT (defect_code) DO NOTHING;
+('ASSEMBLY-MISALIGN');
 
 -- ======================================================
 -- SEED: Production Records (from Ops_Production_Log)
@@ -82,9 +79,7 @@ INSERT INTO production_records (lot_id, production_line_id, record_date) VALUES
 ((SELECT id FROM lots WHERE lot_code = 'LOT-2024-02-002'), (SELECT id FROM production_lines WHERE line_code = 'LINE-B'), '2024-02-02'),
 ((SELECT id FROM lots WHERE lot_code = 'LOT-2024-02-003'), (SELECT id FROM production_lines WHERE line_code = 'LINE-C'), '2024-02-03'),
 ((SELECT id FROM lots WHERE lot_code = 'LOT-2024-02-004'), (SELECT id FROM production_lines WHERE line_code = 'LINE-D'), '2024-02-05'),
-((SELECT id FROM lots WHERE lot_code = 'LOT-2024-02-005'), (SELECT id FROM production_lines WHERE line_code = 'LINE-E'), '2024-02-06')
-ON CONFLICT (lot_id, production_line_id, record_date) DO NOTHING;
-
+((SELECT id FROM lots WHERE lot_code = 'LOT-2024-02-005'), (SELECT id FROM production_lines WHERE line_code = 'LINE-E'), '2024-02-06');
 -- ======================================================
 -- SEED: Inspection Records (from QE Inspector daily/weekly logs)
 -- Inspector A: Daily logs, Inspector B: Weekly logs
@@ -110,8 +105,7 @@ INSERT INTO inspection_records (lot_id, defect_type_id, inspection_date, qty_def
 ((SELECT id FROM lots WHERE lot_code = 'LOT-2024-02-003'), (SELECT id FROM defect_types WHERE defect_code = 'DIMENSION-OOT'), '2024-02-04', 4),
 ((SELECT id FROM lots WHERE lot_code = 'LOT-2024-02-003'), (SELECT id FROM defect_types WHERE defect_code = 'SURFACE-SCRATCH'), '2024-02-04', 2),
 ((SELECT id FROM lots WHERE lot_code = 'LOT-2024-02-004'), (SELECT id FROM defect_types WHERE defect_code = 'SEAL-FAILURE'), '2024-02-07', 1),
-((SELECT id FROM lots WHERE lot_code = 'LOT-2024-02-005'), (SELECT id FROM defect_types WHERE defect_code = 'CORROSION-SPOT'), '2024-02-08', 3)
-ON CONFLICT DO NOTHING;
+((SELECT id FROM lots WHERE lot_code = 'LOT-2024-02-005'), (SELECT id FROM defect_types WHERE defect_code = 'CORROSION-SPOT'), '2024-02-08', 3);
 
 -- ======================================================
 -- SEED: Shipment Records (from Ops_Shipping_Log)
@@ -134,7 +128,5 @@ INSERT INTO shipment_records (lot_id, is_shipped, ship_date) VALUES
 ((SELECT id FROM lots WHERE lot_code = 'LOT-2024-02-003'), TRUE, '2024-02-15'),
 -- Not Yet Shipped Lots
 ((SELECT id FROM lots WHERE lot_code = 'LOT-2024-02-004'), FALSE, NULL),
-((SELECT id FROM lots WHERE lot_code = 'LOT-2024-02-005'), FALSE, NULL)
-ON CONFLICT (lot_id) DO NOTHING;
+((SELECT id FROM lots WHERE lot_code = 'LOT-2024-02-005'), FALSE, NULL);
 
-COMMIT;

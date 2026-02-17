@@ -15,138 +15,162 @@ SteelWorks Operations Reporting Tool is a Python-based application designed to h
 
 ### Technology Stack
 
-- **Database**: PostgreSQL (Render.com for deployment)
-- **Language**: Python 3.9+
-- **ORM**: SQLAlchemy
-- **API**: Flask (optional, for web interface)
+- **Database**: PostgreSQL (Render.com hosted)
+- **Language**: Python 3.12+
+- **Framework**: Streamlit (interactive web UI)
+- **ORM**: SQLAlchemy 2.x
+- **Package Manager**: Poetry
+- **Visualization**: Matplotlib
 - **Testing**: pytest
-- **Data Validation**: Pydantic
 
 ### Architecture
 
 ```
-Data Sources (Excel) 
+Data Sources (Excel, Operations Logs)
     ↓
-seed.sql (Initial Data Load)
+seed.sql (Sample Data Load)
     ↓
-PostgreSQL Database (Schema defined in db/schema.sql)
+PostgreSQL Database on Render.com (Schema: db/schema.sql)
     ↓
 Python ORM Layer (SQLAlchemy models)
     ↓
-Operations API / CLI Interface
+Service Layer (Business Logic)
+    ↓
+Streamlit Web Dashboard (Interactive UI)
 ```
 
 ---
 
 ## How to Run / Build the Code
 
-### Prerequisites
-
-- Python 3.9 or higher
-- PostgreSQL (or access to Render.com PostgreSQL instance)
-- pip (Python package manager)
+### Prerequ12 or higher
+- Poetry (Python package manager)
+- Render.com PostgreSQL instance (or local PostgreSQL)
 - Git
 
-### Setup Instructions
+### Quick Start
 
-#### 1. Clone the Repository
+#### 1. Clone & Install Dependencies
 
 ```bash
 git clone <your-repo-url>
 cd Github_Hub_Repo_and_Markdown_HW
+poetry install
 ```
 
-#### 2. Create Virtual Environment
+#### 2. Configure Database
 
-```bash
-# Windows
-python -m venv venv
-venv\Scripts\activate
-
-# macOS/Linux
-python3 -m venv venv
-source venv/bin/activate
-```
-
-#### 3. Install Dependencies
-
-```bash
-pip install -r requirements.txt
-```
-
-#### 4. Configure Database
-
-Create a `.env` file in the project root:
+Create a `.env` file in the project root with your Render PostgreSQL connection string:
 
 ```env
-DATABASE_URL=postgresql://username:password@hostname:port/dbname
-RENDER_DB_URL=postgresql://user:password@dpg-xxxx.render.com:5432/steelworks_db
-ENV=development
-LOG_LEVEL=INFO
+DATABASE_URL=postgresql://username:password@dpg-xxxxx.render.com/steelworks_db?sslmode=require
 ```
 
-Or use Render.com's provided connection string directly.
-
-#### 5. Initialize Database
+#### 3. Initialize Database
 
 ```bash
-# Create schema in your PostgreSQL database
-psql -h hostname -U username -d dbname -f db/schema.sql
-
-# Load sample data
-psql -h hostname -U username -d dbname -f db/seed.sql
+poetry run python init_db.py
 ```
 
-#### 6. Run the Application
+This script will:
+- Connect to your Render PostgreSQL database
+- Create all tables (schema.sql)
+- Load sample data (seed.sql)
+
+#### 4. Run the Streamlit Dashboard
 
 ```bash
-# CLI Mode
-python -m src.main --help
-
-# API Mode (if Flask is configured)
-python -m src.api.app
+poetry run streamlit run src/ui.py
 ```
+
+The dashboard will open at `http://localhost:8501`
 
 ---
 
-## Usage Examples
+## Dashboard Features
 
-### Example 1: Retrieve Production Records by Lot
+### Pages Available
 
-```python
-from src.models import ProductionRecord
-from src.database import get_session
+1. **Dashboard (Overview)** - Summary metrics:
+   - Production lines with most defects
+   - Defect trends over time (Last 30 days)
+   - Shipment status (shipped vs pending)
 
-session = get_session()
+2. **Production Line Quality** - AC 1:
+   - Identify which production lines had the most defects in the selected period
+   - Rank lines by defect count
 
-# Get all production records for a specific lot
-lot_id = 1
-records = session.query(ProductionRecord).filter(
-    ProductionRecord.lot_id == lot_id
-).all()
+3. **Defect Trends** - AC 2 & 3:
+   - Daily defect trend visualization
+   - Defect aggregation by type with percentages
 
-for record in records:
-    print(f"Lot {record.lot_id} - Line {record.production_line_id} - Date {record.record_date}")
+4. **Shipment Status** - AC 4:
+   - View all lots and their shipment status
+   - Filter by shipped/pending status
+
+5. **Lot Details (Drill-down)** - AC 5:
+   - Search for specific lots
+## Database Schema
+
+### Tables
+
+- **lots** - Production batches (lot_code UNIQUE)
+- **production_lines** - Factory lines (line_code UNIQUE)
+- **defect_types** - Quality defect categories (defect_code UNIQUE)
+- **production_records** - Production events linking lots to lines and dates
+- **inspection_records** - Quality inspection with defect counts
+- **shipment_records** - Shipment status (one per lot, with date validation)
+
+### Views & Indexes
+
+All tables include indexes on:
+- Date ranges (for reporting queries)
+- Foreign keys (for referential integrity)
+- Unique constraints (for data consistency)
+
+---
+
+## Architecture
+
+### Code Structure
+
+```
+src/
+├── __init__.py
+├── models.py              # SQLAlchemy ORM definitions
+├── repository.py          # Data access layer
+├── service.py             # Business logic & reporting
+├── ui.py                  # Streamlit dashboard
+└── __pycache__/
+
+db/
+├── schema.sql             # Database schema (tables, indexes)
+├── seed.sql               # Sample data
+└── sample_queries.sql     # Useful SQL queries
+
+tests/
+├── __init__.py
+├── test_models.py
+├── test_service.py
+├── __init__.py
+
+init_db.py                 # Database initialization script
 ```
 
-### Example 2: Aggregate Defects by Production Line
+### Data Flow
 
-```python
-from src.models import InspectionRecord
-from src.database import get_session
-from sqlalchemy import func
-from datetime import datetime, timedelta
-
-session = get_session()
-
-# Get defect counts by production line in the last 30 days
-days_back = 30
-start_date = datetime.now() - timedelta(days=days_back)
-
-defect_summary = session.query(
-    InspectionRecord.defect_type_id,
-    func.count(InspectionRecord.id).label('defect_count'),
-    func.sum(InspectionRecord.qty_defects).label('total_qty')
+```
+.env (Database URL)
+    ↓
+models.py (load_dotenv, get_db_connection_string)
+    ↓
+Render PostgreSQL
+    ↓
+repository.py (queries)
+    ↓
+service.py (business logic)
+    ↓
+ui.py (Streamlit dashboard displays resultsects).label('total_qty')
 ).filter(
     InspectionRecord.inspection_date >= start_date
 ).group_by(
@@ -279,85 +303,16 @@ xdg-open htmlcov/index.html
 
 ---
 
-## Project Structure
+## Acceptance Criteria Coverage
 
-```
-Github_Hub_Repo_and_Markdown_HW/
-├── src/
-│   ├── __init__.py
-│   ├── main.py                 # CLI entry point
-│   ├── database.py             # Database connection and session management
-│   ├── models.py               # SQLAlchemy ORM models
-│   ├── config.py               # Configuration management
-│   ├── services/
-│   │   ├── __init__.py
-│   │   ├── report_service.py   # Reporting and analytics
-│   │   ├── data_service.py     # Data operations
-│   │   └── validation_service.py
-│   ├── api/                    # Flask API (optional)
-│   │   ├── __init__.py
-│   │   ├── app.py
-│   │   └── routes.py
-│   └── utils/
-│       ├── __init__.py
-│       ├── excel_parser.py
-│       └── validators.py
-├── db/
-│   ├── schema.sql              # PostgreSQL schema definition
-│   ├── seed.sql                # Sample data
-│   └── sample_queries.sql      # Common reporting queries
-├── tests/
-│   ├── __init__.py
-│   ├── test_models.py
-│   ├── test_services.py
-│   ├── test_integration.py
-│   └── conftest.py             # pytest configuration
-├── docs/
-│   ├── assumptions_scope.md
-│   ├── architecture_decision_records.md
-│   ├── data_design.md
-│   └── tech_stack_decision_records.md
-├── data/
-│   └── sample/                 # Sample Excel files
-├── requirements.txt            # Python dependencies
-├── .env.example               # Environment variables template
-├── .gitignore
-└── README.md
-```
+All acceptance criteria are supported by the Streamlit dashboard:
 
----
-
-## Acceptance Criteria & Coverage
-
-All Acceptance Criteria (ACs) are covered by automated tests:
-
-- ✅ AC1: Defect aggregation by production line and date
-- ✅ AC2: Shipment status tracking and validation
-- ✅ AC3: Cross-validation of production, inspection, and shipment records
-- ✅ AC4: Data consistency and referential integrity
-- ✅ AC5: Performance with large datasets (indexed queries)
-
----
-
-## Database Connection
-
-### Local PostgreSQL
-
-```bash
-psql -h localhost -U postgres -d steelworks
-```
-
-### Render.com PostgreSQL
-
-Connection details are provided in the Render dashboard. Use the `DATABASE_URL` in your `.env` file.
-
-### Verify Connection
-
-```python
-from src.database import get_session
-session = get_session()
-print("Database connection successful!")
-```
+- ✅ **AC 1**: Identify production lines with most defects (Production Line Quality page)
+- ✅ **AC 2**: Defect trends over time (Defect Trends page - Daily Trend chart)
+- ✅ **AC 3**: Aggregate defects by type (Defect Trends page - By Type section)
+- ✅ **AC 4**: Determine shipped lots (Shipment Status page)
+- ✅ **AC 5**: Lot drill-down with cross-functional data (Lot Details page)
+- ✅ **AC 6**: Production summary by date and line (Production Summary page)
 
 ---
 
@@ -409,4 +364,54 @@ MIT License - See LICENSE file for details
 
 ## Contact & Support
 
-For issues, questions, or contributions, please open an issue on GitHub or contact the operations team.
+For issues, questions, or contributions, please open an issue on GitHub or contact the operations team.`ModuleNotFoundError: No module named 'matplotlib'`
+
+**Solution**: Install matplotlib
+
+```bash
+poetry add matplotlib
+# or
+pip install matplotlib
+```
+
+### Issue: Database connection failed
+
+**Solution**: Verify `.env` file has correct `DATABASE_URL`
+
+```bash
+# Check .env exists and has DATABASE_URL
+cat .env
+```
+
+### Issue: `psycopg2.OperationalError: connection failed`
+
+**Solution**: Ensure DATABASE_URL has correct credentials and `sslmode=require`
+
+```env
+DATABASE_URL=postgresql://user:password@host/database?sslmode=require
+```
+
+### Issue: Tables don't exist after `init_db.py`
+
+**Solution**: Re-run initialization (it drops and recreates tables)
+
+```bash
+poetry run python init_db.py
+```
+
+### Issue: Streamlit cache issues
+
+**Solution**: Clear Streamlit cache
+
+```bash
+# Windows
+rmdir /s %userprofile%\.streamlit\cache
+
+# macOS/Linux
+rm -rf ~/.streamlit/cache
+```
+
+Then restart the app:
+
+```bash
+poetry run streamlit run src/ui.py
