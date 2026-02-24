@@ -1,12 +1,14 @@
 """SQLAlchemy models for SteelWorks Operations"""
+
 from sqlalchemy import Column, Integer, String, Date, Boolean, ForeignKey
 from sqlalchemy.orm import declarative_base, relationship
 
-Base = declarative_base()
+Base = declarative_base()  # type: ignore[call-overload]
 
 
-class Lot(Base):
+class Lot(Base):  # type: ignore[name-defined,valid-type,misc]
     """Represents a production lot"""
+
     __tablename__ = "lots"
 
     id = Column(Integer, primary_key=True)
@@ -16,23 +18,29 @@ class Lot(Base):
     shipment_records = relationship("ShipmentRecord", back_populates="lot")
 
 
-class ProductionLine(Base):
+class ProductionLine(Base):  # type: ignore[name-defined,valid-type,misc]
     """Represents a production line"""
+
     __tablename__ = "production_lines"
 
     id = Column(Integer, primary_key=True)
     line_code = Column(String(255), unique=True, nullable=False)
 
-    production_records = relationship("ProductionRecord", back_populates="production_line")
+    production_records = relationship(
+        "ProductionRecord", back_populates="production_line"
+    )
 
 
-class ProductionRecord(Base):
+class ProductionRecord(Base):  # type: ignore[name-defined,valid-type,misc]
     """Represents a production record for a lot on a line"""
+
     __tablename__ = "production_records"
 
     id = Column(Integer, primary_key=True)
     lot_id = Column(Integer, ForeignKey("lots.id"), nullable=False)
-    production_line_id = Column(Integer, ForeignKey("production_lines.id"), nullable=False)
+    production_line_id = Column(
+        Integer, ForeignKey("production_lines.id"), nullable=False
+    )
     record_date = Column(Date, nullable=False)
     shift = Column(String(50), nullable=False)
     part_number = Column(String(255), nullable=False)
@@ -44,11 +52,14 @@ class ProductionRecord(Base):
     supervisor_notes = Column(String(255))
 
     lot = relationship("Lot", back_populates="production_records")
-    production_line = relationship("ProductionLine", back_populates="production_records")
+    production_line = relationship(
+        "ProductionLine", back_populates="production_records"
+    )
 
 
-class ShipmentRecord(Base):
+class ShipmentRecord(Base):  # type: ignore[name-defined,valid-type,misc]
     """Represents a shipment record for a lot"""
+
     __tablename__ = "shipment_records"
 
     id = Column(Integer, primary_key=True)

@@ -1,9 +1,10 @@
 """Unit tests for repository layer"""
+
 import pytest
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 
-from steelworks.models import Base, Lot
+from steelworks.models import Base
 from steelworks.repositories import LotRepository
 
 
@@ -16,6 +17,7 @@ def db_session():
     session = Session()
     yield session
     session.close()
+    engine.dispose()
 
 
 class TestLotRepository:
